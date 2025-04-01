@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Calendar, Image } from "lucide-react";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({

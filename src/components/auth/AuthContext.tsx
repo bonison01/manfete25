@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
@@ -107,21 +107,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (profileError) {
           console.error("Error fetching profile:", profileError);
-          toast.error("Error fetching profile");
+          toast("Error fetching profile");
           return;
         }
 
-        if (!profileData.is_admin) {
-          toast.error("You do not have admin access");
+        if (!profileData?.is_admin) {
+          toast("You do not have admin access");
           await supabase.auth.signOut();
           return;
         }
 
-        toast.success("Logged in successfully");
+        toast("Logged in successfully");
         navigate("/admin");
       }
     } catch (error: any) {
-      toast.error(error.message || "Error signing in");
+      toast(error.message || "Error signing in");
       console.error("Error signing in:", error);
     }
   };
@@ -130,9 +130,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await supabase.auth.signOut();
       navigate("/");
-      toast.success("Logged out successfully");
+      toast("Logged out successfully");
     } catch (error: any) {
-      toast.error(error.message || "Error signing out");
+      toast(error.message || "Error signing out");
       console.error("Error signing out:", error);
     }
   };

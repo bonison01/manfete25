@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { Calendar, Clock, Edit, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
