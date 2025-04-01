@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
-import { Check, Ticket, Users, Calendar, Clock, IndianRupee, Graduation, Building, University } from "lucide-react";
+import { Check, Ticket, Users, Calendar, Clock, IndianRupee, GraduationCap, Building, University } from "lucide-react";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -98,7 +98,7 @@ const Register = () => {
     setSelectedEventIds([]);
   };
 
-  const handleTicketChange = (value: string) => {
+  const handleTicketChange = (value: "full" | "weekend" | "day") => {
     const ticket = ticketTypes.find(t => t.id === value);
     if (ticket) {
       setSelectedTicket(ticket);
