@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -249,15 +248,13 @@ const Sponsors = () => {
               Interested in sponsoring Manfete 2025? We offer various sponsorship packages that can help 
               your brand connect with our engaged audience while supporting a cultural celebration.
             </p>
-            <Button 
-              size="lg" 
-              className="bg-festival-purple hover:bg-festival-purple/90"
-              as={motion.button}
+            <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-festival-purple px-8 py-2 text-sm font-medium text-white transition-colors hover:bg-festival-purple/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Get Sponsorship Information
-            </Button>
+            </motion.button>
           </motion.div>
         </div>
       </main>
