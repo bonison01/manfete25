@@ -11,83 +11,102 @@ import { Input } from "@/components/ui/input";
 const events = [
   {
     id: 1,
-    title: "Opening Ceremony",
-    description: "Join us for the grand opening of Manfete with special performances and speeches.",
-    date: "June 15, 2024",
-    time: "6:00 PM - 9:00 PM",
-    location: "Main Stage",
+    title: "Inauguration",
+    description: "Opening ceremony of Manfete 2025",
+    date: "April 24, 2025",
+    time: "11:00 AM",
+    location: "Auditorium, MU",
     category: "ceremony",
-    image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day1"
   },
   {
     id: 2,
-    title: "Art Exhibition",
-    description: "Discover works from over 50 local and international artists.",
-    date: "June 16, 2024",
-    time: "10:00 AM - 6:00 PM",
-    location: "Gallery Hall",
-    category: "exhibition",
-    image: "https://images.unsplash.com/photo-1545033131-485ea67fd7c3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    title: "Debate",
+    description: "Inter-college debate competition",
+    date: "April 24, 2025",
+    time: "1:00 PM - 4:00 PM",
+    location: "Auditorium, MU",
+    category: "academic",
+    image: "https://images.unsplash.com/photo-1544531586-fde5298cdd40?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day1"
   },
   {
     id: 3,
-    title: "Music Concert",
-    description: "Live performances from top bands and solo artists throughout the day.",
-    date: "June 17, 2024",
-    time: "4:00 PM - 11:00 PM",
-    location: "Festival Grounds",
-    category: "music",
-    image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    title: "Quiz",
+    description: "Test your knowledge with our challenging quiz competition",
+    date: "April 25, 2025",
+    time: "12:00 PM - 2:00 PM",
+    location: "Auditorium, MU",
+    category: "academic",
+    image: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day2"
   },
   {
     id: 4,
-    title: "Cultural Dance Performance",
-    description: "Traditional and contemporary dance performances from around the world.",
-    date: "June 18, 2024",
-    time: "2:00 PM - 5:00 PM",
-    location: "Performance Arena",
-    category: "performance",
-    image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    title: "Painting",
+    description: "Express your creativity through colors and canvas",
+    date: "April 25, 2025",
+    time: "1:00 PM - 3:00 PM",
+    location: "Centenary Hall",
+    category: "art",
+    image: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day2"
   },
   {
     id: 5,
-    title: "Food Festival",
-    description: "Taste cuisines from different cultures and regions.",
-    date: "June 19, 2024",
-    time: "11:00 AM - 8:00 PM",
-    location: "Food Court",
-    category: "food",
-    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    title: "Cosplay",
+    description: "Dress up as your favorite character in this exciting competition",
+    date: "April 25, 2025",
+    time: "2:00 PM - 4:00 PM",
+    location: "Auditorium",
+    category: "performance",
+    image: "https://images.unsplash.com/photo-1608889825205-eebdb9fc5806?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day2"
   },
   {
     id: 6,
-    title: "Workshop: Creative Writing",
-    description: "Learn creative writing techniques from published authors.",
-    date: "June 16, 2024",
-    time: "1:00 PM - 3:00 PM",
-    location: "Workshop Room A",
-    category: "workshop",
-    image: "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    title: "Business Idea",
+    description: "Pitch your innovative business concepts to our panel of judges",
+    date: "April 25, 2025",
+    time: "10:00 PM - 12:00 PM",
+    location: "Auditorium",
+    category: "academic",
+    image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day2"
   },
   {
     id: 7,
-    title: "Film Screening",
-    description: "Watch award-winning short films and documentaries.",
-    date: "June 17, 2024",
-    time: "7:00 PM - 10:00 PM",
-    location: "Auditorium",
-    category: "film",
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    title: "Photography",
+    description: "Showcase your photography skills in this competitive event",
+    date: "April 25, 2025",
+    time: "10:00 AM - 2:00 PM",
+    location: "Centenary Hall",
+    category: "art",
+    image: "https://images.unsplash.com/photo-1552168324-d612d77725e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day2"
   },
   {
     id: 8,
-    title: "Closing Ceremony",
-    description: "Join us as we wrap up this year's Manfete with special performances and awards.",
-    date: "June 20, 2024",
-    time: "7:00 PM - 10:00 PM",
-    location: "Main Stage",
+    title: "Manhunt & Manfete Queen",
+    description: "The prestigious personality contest of Manfete 2025",
+    date: "April 26, 2025",
+    time: "10:00 AM - 5:00 PM",
+    location: "New Auditorium",
+    category: "performance",
+    image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day3"
+  },
+  {
+    id: 9,
+    title: "Prize Distribution",
+    description: "Closing ceremony and prize distribution for all events",
+    date: "April 26, 2025",
+    time: "6:00 PM - 9:00 PM",
+    location: "New Auditorium",
     category: "ceremony",
-    image: "https://images.unsplash.com/photo-1574007195527-ac599d8048a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    image: "https://images.unsplash.com/photo-1574007195527-ac599d8048a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+    day: "day3"
   }
 ];
 
@@ -100,7 +119,7 @@ const Events = () => {
         event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.description.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      .filter(event => category === "all" || event.category === category);
+      .filter(event => category === "all" || (category.startsWith("day") ? event.day === category : event.category === category));
   };
 
   return (
@@ -111,7 +130,9 @@ const Events = () => {
           <div className="container mx-auto px-4">
             <h1 className="mb-4 text-center text-4xl font-bold text-festival-gold">Events Schedule</h1>
             <p className="mx-auto mb-8 max-w-2xl text-center text-gray-300">
-              Browse our lineup of performances, workshops, exhibitions, and more at Manfete 2024.
+              Browse our lineup of performances, workshops, exhibitions, and more at Manfete 2025.
+              <br />
+              <span className="text-festival-gold mt-2 inline-block">MIMS, Manipur University</span>
             </p>
             
             <div className="mx-auto max-w-md">
@@ -133,10 +154,13 @@ const Events = () => {
           <Tabs defaultValue="all" className="w-full">
             <TabsList className="mx-auto mb-8 justify-center">
               <TabsTrigger value="all">All Events</TabsTrigger>
+              <TabsTrigger value="day1">Day 1 (Apr 24)</TabsTrigger>
+              <TabsTrigger value="day2">Day 2 (Apr 25)</TabsTrigger>
+              <TabsTrigger value="day3">Day 3 (Apr 26)</TabsTrigger>
               <TabsTrigger value="ceremony">Ceremonies</TabsTrigger>
-              <TabsTrigger value="music">Music</TabsTrigger>
-              <TabsTrigger value="exhibition">Exhibitions</TabsTrigger>
-              <TabsTrigger value="workshop">Workshops</TabsTrigger>
+              <TabsTrigger value="academic">Academic</TabsTrigger>
+              <TabsTrigger value="art">Arts</TabsTrigger>
+              <TabsTrigger value="performance">Performance</TabsTrigger>
             </TabsList>
             
             <TabsContent value="all" className="mt-0">
@@ -147,6 +171,39 @@ const Events = () => {
               </div>
               {filteredEvents("all").length === 0 && (
                 <p className="mt-8 text-center text-muted-foreground">No events match your search.</p>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="day1" className="mt-0">
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {filteredEvents("day1").map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+              {filteredEvents("day1").length === 0 && (
+                <p className="mt-8 text-center text-muted-foreground">No Day 1 events match your search.</p>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="day2" className="mt-0">
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {filteredEvents("day2").map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+              {filteredEvents("day2").length === 0 && (
+                <p className="mt-8 text-center text-muted-foreground">No Day 2 events match your search.</p>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="day3" className="mt-0">
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {filteredEvents("day3").map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+              {filteredEvents("day3").length === 0 && (
+                <p className="mt-8 text-center text-muted-foreground">No Day 3 events match your search.</p>
               )}
             </TabsContent>
             
@@ -161,36 +218,36 @@ const Events = () => {
               )}
             </TabsContent>
             
-            <TabsContent value="music" className="mt-0">
+            <TabsContent value="academic" className="mt-0">
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {filteredEvents("music").map((event) => (
+                {filteredEvents("academic").map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>
-              {filteredEvents("music").length === 0 && (
-                <p className="mt-8 text-center text-muted-foreground">No music events match your search.</p>
+              {filteredEvents("academic").length === 0 && (
+                <p className="mt-8 text-center text-muted-foreground">No academic events match your search.</p>
               )}
             </TabsContent>
             
-            <TabsContent value="exhibition" className="mt-0">
+            <TabsContent value="art" className="mt-0">
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {filteredEvents("exhibition").map((event) => (
+                {filteredEvents("art").map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>
-              {filteredEvents("exhibition").length === 0 && (
-                <p className="mt-8 text-center text-muted-foreground">No exhibition events match your search.</p>
+              {filteredEvents("art").length === 0 && (
+                <p className="mt-8 text-center text-muted-foreground">No art events match your search.</p>
               )}
             </TabsContent>
             
-            <TabsContent value="workshop" className="mt-0">
+            <TabsContent value="performance" className="mt-0">
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {filteredEvents("workshop").map((event) => (
+                {filteredEvents("performance").map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>
-              {filteredEvents("workshop").length === 0 && (
-                <p className="mt-8 text-center text-muted-foreground">No workshop events match your search.</p>
+              {filteredEvents("performance").length === 0 && (
+                <p className="mt-8 text-center text-muted-foreground">No performance events match your search.</p>
               )}
             </TabsContent>
           </Tabs>

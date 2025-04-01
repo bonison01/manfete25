@@ -7,30 +7,30 @@ import { Calendar, Clock, MapPin } from "lucide-react";
 const events = [
   {
     id: 1,
-    title: "Opening Ceremony",
-    description: "Join us for the grand opening of Manfete with special performances and speeches.",
-    date: "June 15, 2024",
-    time: "6:00 PM - 9:00 PM",
-    location: "Main Stage",
+    title: "Inauguration",
+    description: "Opening ceremony of Manfete 2025",
+    date: "April 24, 2025",
+    time: "11:00 AM",
+    location: "Auditorium, MU",
     image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
   },
   {
-    id: 2,
-    title: "Art Exhibition",
-    description: "Discover works from over 50 local and international artists.",
-    date: "June 16, 2024",
-    time: "10:00 AM - 6:00 PM",
-    location: "Gallery Hall",
-    image: "https://images.unsplash.com/photo-1545033131-485ea67fd7c3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    id: 5,
+    title: "Cosplay",
+    description: "Dress up as your favorite character in this exciting competition",
+    date: "April 25, 2025",
+    time: "2:00 PM - 4:00 PM",
+    location: "Auditorium",
+    image: "https://images.unsplash.com/photo-1608889825205-eebdb9fc5806?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
   },
   {
-    id: 3,
-    title: "Music Concert",
-    description: "Live performances from top bands and solo artists throughout the day.",
-    date: "June 17, 2024",
-    time: "4:00 PM - 11:00 PM",
-    location: "Festival Grounds",
-    image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+    id: 8,
+    title: "Manhunt & Manfete Queen",
+    description: "The prestigious personality contest of Manfete 2025",
+    date: "April 26, 2025",
+    time: "10:00 AM - 5:00 PM",
+    location: "New Auditorium",
+    image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
   }
 ];
 
@@ -41,7 +41,7 @@ const EventsPreview = () => {
         <div className="mb-12 text-center">
           <h2 className="mb-2 text-3xl font-bold text-primary sm:text-4xl">Upcoming Events</h2>
           <p className="mx-auto max-w-2xl text-muted-foreground">
-            Explore our featured events and mark your calendar for an unforgettable experience at Manfete.
+            Explore our featured events and mark your calendar for an unforgettable experience at Manfete 2025.
           </p>
         </div>
 

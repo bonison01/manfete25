@@ -10,9 +10,8 @@ const Hero = () => {
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
 
-  // Set event date to 3 months from now
-  const eventDate = new Date();
-  eventDate.setMonth(eventDate.getMonth() + 3);
+  // Set event date for April 24, 2025
+  const eventDate = new Date("April 24, 2025");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -47,7 +46,7 @@ const Hero = () => {
       <div className="container relative z-10 mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="festival-heading mb-4 animate-fade-in text-festival-gold">
-            MANFETE <span className="text-white">2024</span>
+            MANFETE <span className="text-white">2025</span>
           </h1>
           <p className="festival-subheading mb-8 animate-fade-in text-gray-300">
             Celebrating Culture, Art & Community
@@ -56,12 +55,12 @@ const Hero = () => {
           <div className="mb-8 flex items-center justify-center space-x-2 sm:space-x-4 text-white">
             <div className="flex items-center">
               <Calendar className="mr-2 h-5 w-5 text-festival-gold" />
-              <span>{formatDate(eventDate)}</span>
+              <span>April 24-26, 2025</span>
             </div>
             <span className="text-gray-400">|</span>
             <div className="flex items-center">
               <MapPin className="mr-2 h-5 w-5 text-festival-gold" />
-              <span>Central Park, New York</span>
+              <span>Manipur University</span>
             </div>
             <span className="hidden sm:inline text-gray-400">|</span>
             <div className="hidden sm:flex items-center">
