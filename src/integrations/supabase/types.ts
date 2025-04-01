@@ -9,7 +9,120 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          image_url: string | null
+          location: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gallery: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string
+          title: string | null
+          year: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url: string
+          title?: string | null
+          year?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string
+          title?: string | null
+          year?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          is_admin?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+        }
+        Relationships: []
+      }
+      registrations: {
+        Row: {
+          amount: number
+          college: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          payment_status: string | null
+          phone: string
+          ticket_type: string
+        }
+        Insert: {
+          amount: number
+          college?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          payment_status?: string | null
+          phone: string
+          ticket_type: string
+        }
+        Update: {
+          amount?: number
+          college?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          payment_status?: string | null
+          phone?: string
+          ticket_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
