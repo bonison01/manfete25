@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -9,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/components/ui/use-toast";
-import { Check, Ticket, Users, Calendar, Clock, IndianRupee, GraduationCap, Building, University } from "lucide-react";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Check, Ticket, Users, Calendar, Clock, IndianRupee, GraduationCap, Building, University } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
+import RegistrationSuccess from "@/components/registration/RegistrationSuccess";
 
 const formSchema = z.object({
   fullName: z.string().min(2, {
@@ -49,6 +49,9 @@ const Register = () => {
       updates: true,
     },
   });
+
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [registrationId, setRegistrationId] = useState("");
 
   const ticketTypes = [
     {
@@ -89,10 +92,9 @@ const Register = () => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     
-    toast({
-      title: "Registration Successful!",
-      description: "Your registration for Manfete 2025 has been confirmed. Check your email for details.",
-    });
+    const newRegistrationId = `MFETE-${uuidv4().slice(0, 8).toUpperCase()}`;
+    setRegistrationId(newRegistrationId);
+    setRegistrationComplete(true);
     
     form.reset();
     setSelectedEventIds([]);
@@ -122,6 +124,18 @@ const Register = () => {
     return ticketPrice * numTickets;
   };
 
+  if (registrationComplete) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <main className="container mx-auto px-4 py-12">
+          <RegistrationSuccess registrationId={registrationId} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -147,36 +161,6 @@ const Register = () => {
         </div>
         
         <div className="container mx-auto px-4 py-12">
-          <div className="mb-10 grid gap-10 md:grid-cols-3">
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-festival-purple text-white">
-                <Ticket className="h-8 w-8" />
-              </div>
-              <h3 className="mb-2 text-lg font-semibold">Choose Your Pass</h3>
-              <p className="text-muted-foreground">
-                Select from our full festival pass, weekend pass, or single day options.
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-festival-teal text-white">
-                <Users className="h-8 w-8" />
-              </div>
-              <h3 className="mb-2 text-lg font-semibold">Register Your Details</h3>
-              <p className="text-muted-foreground">
-                Fill out your information and select the events you want to attend.
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-festival-gold text-festival-dark">
-                <IndianRupee className="h-8 w-8" />
-              </div>
-              <h3 className="mb-2 text-lg font-semibold">Confirm & Pay</h3>
-              <p className="text-muted-foreground">
-                Review your order and complete your payment securely in INR.
-              </p>
-            </div>
-          </div>
-          
           <div className="mx-auto max-w-4xl">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
