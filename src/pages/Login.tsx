@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 const Login = () => {
@@ -65,7 +65,7 @@ const Login = () => {
                   />
                 </div>
               </CardContent>
-              <CardFooter className="flex-col space-y-4">
+              <CardFooter>
                 <Button
                   type="submit"
                   className="w-full bg-festival-purple hover:bg-festival-purple/90"
@@ -80,16 +80,6 @@ const Login = () => {
                     "Login"
                   )}
                 </Button>
-                
-                <div className="text-center text-sm">
-                  <span className="text-muted-foreground">Need an admin account? </span>
-                  <Link 
-                    to="/admin-signup" 
-                    className="text-festival-purple hover:underline"
-                  >
-                    Sign up here
-                  </Link>
-                </div>
               </CardFooter>
             </form>
           </Card>
