@@ -8,60 +8,67 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Calendar, Clock, Edit, MapPin, Pencil, Plus, Trash2, IndianRupee, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { Globe, Image, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 
-interface Event {
+interface Sponsor {
   id: string;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  image_url: string;
-  price: number;
+  name: string;
+  logo_url: string | null;
+  website_url: string | null;
+  description: string | null;
+  tier: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-const Events = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+const SponsorsManager = () => {
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
 
   const [formData, setFormData] = useState({
-    title: "",
+    name: "",
+    website_url: "",
     description: "",
-    date: "",
-    time: "",
-    location: "",
-    image_url: "",
-    price: "0",
+    tier: "bronze",
   });
 
   // File upload state
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState("");
 
+  const sponsorTiers = [
+    { id: "platinum", name: "Platinum" },
+    { id: "gold", name: "Gold" },
+    { id: "silver", name: "Silver" },
+    { id: "bronze", name: "Bronze" },
+    { id: "partner", name: "Partner" }
+  ];
+
   useEffect(() => {
-    fetchEvents();
+    fetchSponsors();
   }, []);
 
-  const fetchEvents = async () => {
+  const fetchSponsors = async () => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from("events")
+        .from("sponsors")
         .select("*")
-        .order("date", { ascending: true });
+        .order("tier", { ascending: true })
+        .order("name", { ascending: true });
 
       if (error) throw error;
-      setEvents(data || []);
+      setSponsors(data || []);
     } catch (error) {
-      console.error("Error fetching events:", error);
-      toast.error("Failed to load events");
+      console.error("Error fetching sponsors:", error);
+      toast.error("Failed to load sponsors");
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +77,10 @@ const Events = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleTierChange = (value: string) => {
+    setFormData({ ...formData, tier: value });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,53 +99,48 @@ const Events = () => {
     }
   };
 
-  const handleEditEvent = (event: Event) => {
-    const eventDate = new Date(event.date);
-    
-    setSelectedEvent(event);
+  const handleEditSponsor = (sponsor: Sponsor) => {
+    setSelectedSponsor(sponsor);
     setFormData({
-      title: event.title,
-      description: event.description || "",
-      date: format(eventDate, "yyyy-MM-dd"),
-      time: format(eventDate, "HH:mm"),
-      location: event.location || "",
-      image_url: event.image_url || "",
-      price: event.price.toString(),
+      name: sponsor.name,
+      website_url: sponsor.website_url || "",
+      description: sponsor.description || "",
+      tier: sponsor.tier || "bronze",
     });
-    setFilePreview(event.image_url || "");
+    setFilePreview(sponsor.logo_url || "");
     setIsOpen(true);
   };
 
-  const handleDeleteClick = (event: Event) => {
-    setSelectedEvent(event);
+  const handleDeleteClick = (sponsor: Sponsor) => {
+    setSelectedSponsor(sponsor);
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteEvent = async () => {
-    if (!selectedEvent) return;
+  const handleDeleteSponsor = async () => {
+    if (!selectedSponsor) return;
     
     try {
       setIsSubmitting(true);
       
-      // If there's an image URL and it's in our storage, delete it
-      if (selectedEvent.image_url && selectedEvent.image_url.includes("storage")) {
-        const path = selectedEvent.image_url.split("/").slice(4).join("/");
-        await supabase.storage.from("event_images").remove([path]);
+      // If there's a logo URL and it's in our storage, delete it
+      if (selectedSponsor.logo_url && selectedSponsor.logo_url.includes("storage")) {
+        const path = selectedSponsor.logo_url.split("/").slice(4).join("/");
+        await supabase.storage.from("sponsor_logos").remove([path]);
       }
       
       const { error } = await supabase
-        .from("events")
+        .from("sponsors")
         .delete()
-        .eq("id", selectedEvent.id);
+        .eq("id", selectedSponsor.id);
         
       if (error) throw error;
       
-      toast.success("Event deleted successfully");
-      setEvents(events.filter(e => e.id !== selectedEvent.id));
+      toast.success("Sponsor deleted successfully");
+      setSponsors(sponsors.filter(s => s.id !== selectedSponsor.id));
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      console.error("Error deleting event:", error);
-      toast.error("Failed to delete event");
+      console.error("Error deleting sponsor:", error);
+      toast.error("Failed to delete sponsor");
     } finally {
       setIsSubmitting(false);
     }
@@ -146,78 +152,77 @@ const Events = () => {
     try {
       setIsSubmitting(true);
       
-      // Combine date and time
-      const dateTime = new Date(`${formData.date}T${formData.time}`);
-      
-      let image_url = formData.image_url;
+      let logo_url = selectedSponsor?.logo_url || null;
       
       // If there's a file to upload
       if (file) {
+        // Create the storage bucket if it doesn't exist
+        const { data: bucketData, error: bucketError } = await supabase.storage.getBucket("sponsor_logos");
+        
+        if (bucketError && bucketError.message.includes("not found")) {
+          await supabase.storage.createBucket("sponsor_logos", {
+            public: true,
+            fileSizeLimit: 1024 * 1024 * 2, // 2MB
+          });
+        }
+        
         const fileExt = file.name.split(".").pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
         
         const { error: uploadError, data: uploadData } = await supabase.storage
-          .from("event_images")
+          .from("sponsor_logos")
           .upload(filePath, file);
           
         if (uploadError) throw uploadError;
         
         // Get the public URL
         const { data: urlData } = supabase.storage
-          .from("event_images")
+          .from("sponsor_logos")
           .getPublicUrl(filePath);
           
-        image_url = urlData.publicUrl;
+        logo_url = urlData.publicUrl;
       }
       
-      // Validate price
-      const price = parseFloat(formData.price);
-      if (isNaN(price) || price < 0) {
-        throw new Error("Price must be a valid number and cannot be negative");
-      }
-      
-      if (selectedEvent) {
-        // Update existing event
+      if (selectedSponsor) {
+        // Update existing sponsor
         const { error } = await supabase
-          .from("events")
+          .from("sponsors")
           .update({
-            title: formData.title,
-            description: formData.description,
-            date: dateTime.toISOString(),
-            location: formData.location,
-            image_url,
-            price,
+            name: formData.name,
+            website_url: formData.website_url || null,
+            description: formData.description || null,
+            tier: formData.tier,
+            logo_url,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", selectedEvent.id);
+          .eq("id", selectedSponsor.id);
           
         if (error) throw error;
-        toast.success("Event updated successfully");
+        toast.success("Sponsor updated successfully");
       } else {
-        // Create new event
-        const { error, data } = await supabase
-          .from("events")
+        // Create new sponsor
+        const { error } = await supabase
+          .from("sponsors")
           .insert({
-            title: formData.title,
-            description: formData.description,
-            date: dateTime.toISOString(),
-            location: formData.location,
-            image_url,
-            price,
-          })
-          .select();
+            name: formData.name,
+            website_url: formData.website_url || null,
+            description: formData.description || null,
+            tier: formData.tier,
+            logo_url,
+            updated_at: new Date().toISOString(),
+          });
           
         if (error) throw error;
-        toast.success("Event created successfully");
+        toast.success("Sponsor added successfully");
       }
       
-      // Refresh events
-      fetchEvents();
+      // Refresh sponsors
+      fetchSponsors();
       resetForm();
-    } catch (error: any) {
-      console.error("Error saving event:", error);
-      toast.error(error.message || "Failed to save event");
+    } catch (error) {
+      console.error("Error saving sponsor:", error);
+      toast.error("Failed to save sponsor");
     } finally {
       setIsSubmitting(false);
       setIsOpen(false);
@@ -226,20 +231,17 @@ const Events = () => {
 
   const resetForm = () => {
     setFormData({
-      title: "",
+      name: "",
+      website_url: "",
       description: "",
-      date: "",
-      time: "",
-      location: "",
-      image_url: "",
-      price: "0",
+      tier: "bronze",
     });
     setFile(null);
     setFilePreview("");
-    setSelectedEvent(null);
+    setSelectedSponsor(null);
   };
 
-  const openNewEventDialog = () => {
+  const openNewSponsorDialog = () => {
     resetForm();
     setIsOpen(true);
   };
@@ -247,10 +249,10 @@ const Events = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Manage Events</h1>
-        <Button onClick={openNewEventDialog} className="bg-festival-purple hover:bg-festival-purple/90">
+        <h1 className="text-2xl font-bold">Manage Sponsors</h1>
+        <Button onClick={openNewSponsorDialog} className="bg-festival-purple hover:bg-festival-purple/90">
           <Plus className="mr-2 h-4 w-4" />
-          Add Event
+          Add Sponsor
         </Button>
       </div>
 
@@ -264,51 +266,60 @@ const Events = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Price</TableHead>
+                  <TableHead>Logo</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Tier</TableHead>
+                  <TableHead>Website</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {events.length === 0 ? (
+                {sponsors.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      No events found. Create your first event.
+                      No sponsors found. Add your first sponsor.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  events.map((event) => (
-                    <TableRow key={event.id}>
-                      <TableCell className="font-medium">{event.title}</TableCell>
+                  sponsors.map((sponsor) => (
+                    <TableRow key={sponsor.id}>
                       <TableCell>
-                        {event.date && (
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Calendar className="mr-2 h-4 w-4" />
-                            {new Date(event.date).toLocaleDateString()}
+                        {sponsor.logo_url ? (
+                          <img 
+                            src={sponsor.logo_url} 
+                            alt={sponsor.name} 
+                            className="h-10 w-10 object-contain"
+                          />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                            <Image className="h-5 w-5 text-muted-foreground" />
                           </div>
                         )}
                       </TableCell>
+                      <TableCell className="font-medium">{sponsor.name}</TableCell>
                       <TableCell>
-                        {event.location && (
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="mr-2 h-4 w-4" />
-                            {event.location}
-                          </div>
-                        )}
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize bg-primary/10 text-primary">
+                          {sponsor.tier || "Bronze"}
+                        </span>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center text-sm font-medium">
-                          <IndianRupee className="mr-1 h-3 w-3" />
-                          {event.price}
-                        </div>
+                        {sponsor.website_url && (
+                          <a 
+                            href={sponsor.website_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center text-sm text-muted-foreground hover:text-primary"
+                          >
+                            <Globe className="mr-1 h-3 w-3" />
+                            Website
+                          </a>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleEditEvent(event)}
+                          onClick={() => handleEditSponsor(sponsor)}
                           className="text-gray-500 hover:text-festival-purple"
                         >
                           <Pencil className="h-4 w-4" />
@@ -317,7 +328,7 @@ const Events = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteClick(event)}
+                          onClick={() => handleDeleteClick(sponsor)}
                           className="text-gray-500 hover:text-red-600"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -333,27 +344,59 @@ const Events = () => {
         </Card>
       )}
 
-      {/* Event form dialog */}
+      {/* Sponsor form dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{selectedEvent ? "Edit Event" : "Add New Event"}</DialogTitle>
+            <DialogTitle>{selectedSponsor ? "Edit Sponsor" : "Add New Sponsor"}</DialogTitle>
             <DialogDescription>
-              Fill in the form below to {selectedEvent ? "update the" : "create a new"} event
+              Fill in the form below to {selectedSponsor ? "update the" : "add a new"} sponsor
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
               <div>
-                <Label htmlFor="title">Event Title</Label>
+                <Label htmlFor="name">Sponsor Name</Label>
                 <Input
-                  id="title"
-                  name="title"
-                  value={formData.title}
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   required
                 />
               </div>
+              
+              <div>
+                <Label htmlFor="tier">Sponsorship Tier</Label>
+                <Select
+                  value={formData.tier}
+                  onValueChange={handleTierChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sponsorTiers.map((tier) => (
+                      <SelectItem key={tier.id} value={tier.id}>
+                        {tier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="website_url">Website URL</Label>
+                <Input
+                  id="website_url"
+                  name="website_url"
+                  type="url"
+                  value={formData.website_url}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com"
+                />
+              </div>
+              
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -364,60 +407,11 @@ const Events = () => {
                   rows={3}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="date">Date</Label>
-                  <Input
-                    id="date"
-                    name="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="time">Time</Label>
-                  <Input
-                    id="time"
-                    name="time"
-                    type="time"
-                    value={formData.time}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
+              
               <div>
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="logo">Sponsor Logo</Label>
                 <Input
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div>
-                <Label htmlFor="price">Price (₹)</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="image">Event Image</Label>
-                <Input
-                  id="image"
+                  id="logo"
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
@@ -425,11 +419,11 @@ const Events = () => {
               </div>
               {filePreview && (
                 <div className="mt-2">
-                  <p className="text-sm text-muted-foreground mb-2">Image Preview:</p>
+                  <p className="text-sm text-muted-foreground mb-2">Logo Preview:</p>
                   <img
                     src={filePreview}
-                    alt="Event preview"
-                    className="max-h-40 rounded-md object-cover"
+                    alt="Sponsor logo preview"
+                    className="max-h-40 rounded-md object-contain"
                   />
                 </div>
               )}
@@ -450,10 +444,10 @@ const Events = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {selectedEvent ? "Updating..." : "Creating..."}
+                    {selectedSponsor ? "Updating..." : "Adding..."}
                   </>
                 ) : (
-                  selectedEvent ? "Update Event" : "Create Event"
+                  selectedSponsor ? "Update Sponsor" : "Add Sponsor"
                 )}
               </Button>
             </DialogFooter>
@@ -467,7 +461,7 @@ const Events = () => {
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{selectedEvent?.title}"? This action cannot be undone.
+              Are you sure you want to delete "{selectedSponsor?.name}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -479,7 +473,7 @@ const Events = () => {
             </Button>
             <Button
               variant="destructive"
-              onClick={handleDeleteEvent}
+              onClick={handleDeleteSponsor}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -498,4 +492,4 @@ const Events = () => {
   );
 };
 
-export default Events;
+export default SponsorsManager;

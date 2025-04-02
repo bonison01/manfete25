@@ -1,20 +1,20 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/components/ui/use-toast";
-import { Check, Ticket, Users, Calendar, Clock, IndianRupee, GraduationCap, Building, University } from "lucide-react";
+import { toast } from "sonner";
+import { Check, Calendar, Clock, IndianRupee, Building, University } from "lucide-react";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   fullName: z.string().min(2, {
@@ -23,103 +23,99 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address."
   }),
-  phone: z.string().optional(),
-  university: z.string().min(2, {
+  phone: z.string().min(10, {
+    message: "Phone number must be at least 10 digits."
+  }),
+  college: z.string().min(2, {
     message: "Please enter your university or institution."
   }),
   address: z.string().optional(),
-  ticketType: z.enum(["full", "weekend", "day"]),
-  numTickets: z.string(),
-  selectedEvents: z.array(z.string()).optional(),
+  eventId: z.string({
+    required_error: "Please select an event."
+  }),
   updates: z.boolean().default(true),
 });
 
 const Register = () => {
+  const navigate = useNavigate();
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
       email: "",
       phone: "",
-      university: "",
+      college: "",
       address: "",
-      ticketType: "full",
-      numTickets: "1",
-      selectedEvents: [],
+      eventId: "",
       updates: true,
     },
   });
 
-  const ticketTypes = [
-    {
-      id: "full",
-      name: "Full Festival Pass",
-      price: "₹1499",
-      description: "Access to all events for the entire festival duration (April 24-26, 2025)"
-    },
-    {
-      id: "weekend",
-      name: "Weekend Pass",
-      price: "₹899",
-      description: "Access to all events on April 25-26, 2025 only"
-    },
-    {
-      id: "day",
-      name: "Day Pass",
-      price: "₹499",
-      description: "Access to all events for one day of your choice"
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("date", { ascending: true });
+
+      if (error) throw error;
+      setEvents(data || []);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      toast.error("Failed to load events");
+      setLoading(false);
     }
-  ];
-
-  const eventsList = [
-    { id: "inauguration", name: "Inauguration", date: "April 24", venue: "Auditorium, MU", price: "Included" },
-    { id: "debate", name: "Debate Competition", date: "April 24", venue: "Auditorium, MU", price: "Included" },
-    { id: "quiz", name: "Quiz Competition", date: "April 25", venue: "Auditorium, MU", price: "Included" },
-    { id: "painting", name: "Painting Competition", date: "April 25", venue: "Centenary Hall", price: "Included" },
-    { id: "cosplay", name: "Cosplay Contest", date: "April 25", venue: "Auditorium", price: "Included" },
-    { id: "business", name: "Business Idea Presentation", date: "April 25", venue: "Auditorium", price: "Included" },
-    { id: "photography", name: "Photography Exhibition", date: "April 25", venue: "Centenary Hall", price: "Included" },
-    { id: "manhunt", name: "Manhunt & Manfete Queen", date: "April 26", venue: "New Auditorium", price: "Included" },
-    { id: "closing", name: "Prize Distribution & Closing", date: "April 26", venue: "New Auditorium", price: "Included" }
-  ];
-  
-  const [selectedTicket, setSelectedTicket] = useState(ticketTypes[0]);
-  const [selectedEventIds, setSelectedEventIds] = useState<string[]>([]);
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    
-    toast({
-      title: "Registration Successful!",
-      description: "Your registration for Manfete 2025 has been confirmed. Check your email for details.",
-    });
-    
-    form.reset();
-    setSelectedEventIds([]);
   };
 
-  const handleTicketChange = (value: "full" | "weekend" | "day") => {
-    const ticket = ticketTypes.find(t => t.id === value);
-    if (ticket) {
-      setSelectedTicket(ticket);
+  const handleEventSelect = (eventId: string) => {
+    const event = events.find(e => e.id === eventId);
+    if (event) {
+      setSelectedEvent(event);
+      form.setValue("eventId", eventId);
     }
-    form.setValue("ticketType", value);
   };
 
-  const toggleEvent = (eventId: string) => {
-    setSelectedEventIds(prev => {
-      if (prev.includes(eventId)) {
-        return prev.filter(id => id !== eventId);
-      } else {
-        return [...prev, eventId];
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      if (!selectedEvent) {
+        toast.error("Please select an event");
+        return;
       }
-    });
-  };
 
-  const calculateTotal = () => {
-    const ticketPrice = parseInt(selectedTicket.price.replace("₹", ""));
-    const numTickets = parseInt(form.getValues("numTickets") || "1");
-    return ticketPrice * numTickets;
+      const { data, error } = await supabase
+        .from("registrations")
+        .insert({
+          name: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          college: values.college,
+          event_id: values.eventId,
+          amount: selectedEvent.price,
+          payment_status: "pending"
+        })
+        .select("id");
+
+      if (error) throw error;
+
+      // Navigate to success page with registration ID
+      if (data && data[0]) {
+        toast.success("Registration successful!");
+        navigate(`/registration-success/${data[0].id}`);
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast.error(error.message || "Registration failed. Please try again.");
+    }
   };
 
   return (
@@ -150,20 +146,20 @@ const Register = () => {
           <div className="mb-10 grid gap-10 md:grid-cols-3">
             <div className="flex flex-col items-center text-center">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-festival-purple text-white">
-                <Ticket className="h-8 w-8" />
+                <Calendar className="h-8 w-8" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold">Choose Your Pass</h3>
+              <h3 className="mb-2 text-lg font-semibold">Choose Your Event</h3>
               <p className="text-muted-foreground">
-                Select from our full festival pass, weekend pass, or single day options.
+                Select from our exciting lineup of events for Manfete 2025.
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-festival-teal text-white">
-                <Users className="h-8 w-8" />
+                <University className="h-8 w-8" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">Register Your Details</h3>
               <p className="text-muted-foreground">
-                Fill out your information and select the events you want to attend.
+                Fill out your information to participate in the festival.
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -172,7 +168,7 @@ const Register = () => {
               </div>
               <h3 className="mb-2 text-lg font-semibold">Confirm & Pay</h3>
               <p className="text-muted-foreground">
-                Review your order and complete your payment securely in INR.
+                Review your registration and complete your payment securely in INR.
               </p>
             </div>
           </div>
@@ -189,6 +185,70 @@ const Register = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-6">
+                          <div>
+                            <Label className="mb-2 block">Events (Select the event you want to participate in) *</Label>
+                            {loading ? (
+                              <div className="flex items-center justify-center p-6">
+                                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                              </div>
+                            ) : events.length === 0 ? (
+                              <div className="p-4 text-center text-muted-foreground">
+                                No events available. Please check back later.
+                              </div>
+                            ) : (
+                              <div className="grid gap-3">
+                                {events.map((event) => (
+                                  <div 
+                                    key={event.id} 
+                                    className={`rounded-lg border p-3 cursor-pointer transition-all ${
+                                      selectedEvent?.id === event.id
+                                        ? 'border-festival-purple bg-festival-purple/5' 
+                                        : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                                    onClick={() => handleEventSelect(event.id)}
+                                  >
+                                    <div className="flex items-start gap-2">
+                                      <div className={`mt-0.5 h-4 w-4 rounded-sm border flex items-center justify-center ${
+                                        selectedEvent?.id === event.id ? 'bg-festival-purple border-festival-purple' : 'border-gray-300'
+                                      }`}>
+                                        {selectedEvent?.id === event.id && <Check className="h-3 w-3 text-white" />}
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="flex items-center justify-between">
+                                          <p className="font-medium">{event.title}</p>
+                                          <p className="font-bold text-festival-purple flex items-center">
+                                            <IndianRupee className="h-4 w-4 mr-1" />
+                                            {event.price}
+                                          </p>
+                                        </div>
+                                        {event.description && (
+                                          <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
+                                        )}
+                                        <div className="flex flex-wrap gap-x-4 text-xs text-muted-foreground mt-2">
+                                          <span className="flex items-center">
+                                            <Calendar className="mr-1 h-3 w-3" />
+                                            {new Date(event.date).toLocaleDateString()}
+                                          </span>
+                                          {event.location && (
+                                            <span className="flex items-center">
+                                              <Building className="mr-1 h-3 w-3" />
+                                              {event.location}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {form.formState.errors.eventId && (
+                              <p className="mt-2 text-sm font-medium text-destructive">
+                                {form.formState.errors.eventId.message}
+                              </p>
+                            )}
+                          </div>
+                          
                           <div className="grid gap-4 md:grid-cols-2">
                             <FormField
                               control={form.control}
@@ -232,7 +292,7 @@ const Register = () => {
                               name="phone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Phone Number</FormLabel>
+                                  <FormLabel>Phone Number *</FormLabel>
                                   <FormControl>
                                     <Input 
                                       placeholder="Enter your phone number" 
@@ -246,13 +306,13 @@ const Register = () => {
                             
                             <FormField
                               control={form.control}
-                              name="university"
+                              name="college"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>University/Institution *</FormLabel>
+                                  <FormLabel>College/Institution *</FormLabel>
                                   <FormControl>
                                     <Input 
-                                      placeholder="Enter your university or institution" 
+                                      placeholder="Enter your college or institution" 
                                       {...field} 
                                     />
                                   </FormControl>
@@ -279,98 +339,6 @@ const Register = () => {
                             )}
                           />
                           
-                          <div>
-                            <Label>Ticket Type *</Label>
-                            <RadioGroup 
-                              value={form.getValues("ticketType")} 
-                              onValueChange={handleTicketChange} 
-                              className="mt-2 space-y-3"
-                            >
-                              {ticketTypes.map((type) => (
-                                <div key={type.id} className="flex items-start space-x-2 rounded-md border p-3">
-                                  <RadioGroupItem value={type.id} id={type.id} className="mt-1" />
-                                  <div className="flex-1">
-                                    <Label htmlFor={type.id} className="text-base font-medium flex items-center justify-between">
-                                      <span>{type.name}</span>
-                                      <span className="font-bold text-festival-purple flex items-center">
-                                        <IndianRupee className="h-4 w-4 mr-1" />
-                                        {type.price.replace("₹", "")}
-                                      </span>
-                                    </Label>
-                                    <p className="text-sm text-muted-foreground">{type.description}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </RadioGroup>
-                          </div>
-                          
-                          <FormField
-                            control={form.control}
-                            name="numTickets"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Number of Tickets *</FormLabel>
-                                <Select
-                                  value={field.value}
-                                  onValueChange={field.onChange}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select quantity" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="1">1</SelectItem>
-                                    <SelectItem value="2">2</SelectItem>
-                                    <SelectItem value="3">3</SelectItem>
-                                    <SelectItem value="4">4</SelectItem>
-                                    <SelectItem value="5">5</SelectItem>
-                                    <SelectItem value="6">6</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <div>
-                            <Label className="mb-2 block">Events (Select the events you plan to attend)</Label>
-                            <div className="grid gap-2 md:grid-cols-2">
-                              {eventsList.map((event) => (
-                                <div 
-                                  key={event.id} 
-                                  className={`rounded-lg border p-3 cursor-pointer transition-all ${
-                                    selectedEventIds.includes(event.id) 
-                                      ? 'border-festival-purple bg-festival-purple/5' 
-                                      : 'border-gray-200 hover:border-gray-300'
-                                  }`}
-                                  onClick={() => toggleEvent(event.id)}
-                                >
-                                  <div className="flex items-start gap-2">
-                                    <div className={`mt-0.5 h-4 w-4 rounded-sm border flex items-center justify-center ${
-                                      selectedEventIds.includes(event.id) ? 'bg-festival-purple border-festival-purple' : 'border-gray-300'
-                                    }`}>
-                                      {selectedEventIds.includes(event.id) && <Check className="h-3 w-3 text-white" />}
-                                    </div>
-                                    <div>
-                                      <p className="font-medium">{event.name}</p>
-                                      <div className="flex flex-wrap gap-x-4 text-xs text-muted-foreground">
-                                        <span className="flex items-center">
-                                          <Calendar className="mr-1 h-3 w-3" />
-                                          {event.date}
-                                        </span>
-                                        <span className="flex items-center">
-                                          <Building className="mr-1 h-3 w-3" />
-                                          {event.venue}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
                           <FormField
                             control={form.control}
                             name="updates"
@@ -396,35 +364,38 @@ const Register = () => {
                   <div>
                     <Card>
                       <CardHeader>
-                        <CardTitle>Order Summary</CardTitle>
+                        <CardTitle>Registration Summary</CardTitle>
                         <CardDescription>Your registration details</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div>
-                          <div className="mb-1 text-sm font-medium">Ticket Type</div>
-                          <div className="flex justify-between">
-                            <span>{selectedTicket.name}</span>
-                            <span className="flex items-center">
-                              <IndianRupee className="h-3 w-3 mr-1" />
-                              {selectedTicket.price.replace("₹", "")}
-                            </span>
+                        {selectedEvent ? (
+                          <>
+                            <div>
+                              <div className="mb-1 text-sm font-medium">Selected Event</div>
+                              <div className="flex justify-between">
+                                <span>{selectedEvent.title}</span>
+                                <span className="flex items-center">
+                                  <IndianRupee className="h-3 w-3 mr-1" />
+                                  {selectedEvent.price}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="rounded-md bg-muted p-3">
+                              <div className="flex justify-between font-semibold">
+                                <span>Total</span>
+                                <span className="flex items-center">
+                                  <IndianRupee className="h-4 w-4 mr-1" />
+                                  {selectedEvent.price}
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center text-muted-foreground p-4">
+                            Select an event to see the summary
                           </div>
-                        </div>
-                        
-                        <div>
-                          <div className="mb-1 text-sm font-medium">Quantity</div>
-                          <div>{form.getValues("numTickets") || "1"}</div>
-                        </div>
-                        
-                        <div className="rounded-md bg-muted p-3">
-                          <div className="flex justify-between font-semibold">
-                            <span>Total</span>
-                            <span className="flex items-center">
-                              <IndianRupee className="h-4 w-4 mr-1" />
-                              {calculateTotal()}
-                            </span>
-                          </div>
-                        </div>
+                        )}
                         
                         <div className="space-y-2 rounded-md border p-3">
                           <div className="flex items-start space-x-2">
@@ -445,7 +416,11 @@ const Register = () => {
                         </div>
                       </CardContent>
                       <CardFooter className="flex-col space-y-4">
-                        <Button type="submit" className="w-full bg-festival-purple hover:bg-festival-purple/90">
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-festival-purple hover:bg-festival-purple/90"
+                          disabled={!selectedEvent || loading}
+                        >
                           <IndianRupee className="h-4 w-4 mr-1" />
                           Continue to Payment
                         </Button>

@@ -12,6 +12,7 @@ import Gallery from "./pages/Gallery";
 import Sponsors from "./pages/Sponsors";
 import About from "./pages/About";
 import Register from "./pages/Register";
+import RegistrationSuccess from "./pages/RegistrationSuccess";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -22,6 +23,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import EventsManager from "./pages/admin/Events";
 import GalleryManager from "./pages/admin/GalleryManager";
 import Registrations from "./pages/admin/Registrations";
+import SponsorsManager from "./pages/admin/Sponsors";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,7 @@ const App = () => (
             <Route path="/sponsors" element={<Sponsors />} />
             <Route path="/about" element={<About />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/registration-success/:id" element={<RegistrationSuccess />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             
@@ -50,6 +53,7 @@ const App = () => (
                 <Route path="events" element={<EventsManager />} />
                 <Route path="gallery" element={<GalleryManager />} />
                 <Route path="registrations" element={<Registrations />} />
+                <Route path="sponsors" element={<SponsorsManager />} />
               </Route>
             </Route>
             

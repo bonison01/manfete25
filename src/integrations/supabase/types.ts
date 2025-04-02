@@ -17,6 +17,7 @@ export type Database = {
           id: string
           image_url: string | null
           location: string | null
+          price: number
           title: string
           updated_at: string
         }
@@ -27,6 +28,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           location?: string | null
+          price?: number
           title: string
           updated_at?: string
         }
@@ -37,6 +39,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           location?: string | null
+          price?: number
           title?: string
           updated_at?: string
         }
@@ -94,12 +97,12 @@ export type Database = {
           college: string | null
           created_at: string
           email: string
+          event_id: string | null
           id: string
           name: string
           payment_image_url: string | null
           payment_status: string | null
           phone: string
-          ticket_type: string
         }
         Insert: {
           accommodation_required?: boolean | null
@@ -107,12 +110,12 @@ export type Database = {
           college?: string | null
           created_at?: string
           email: string
+          event_id?: string | null
           id?: string
           name: string
           payment_image_url?: string | null
           payment_status?: string | null
           phone: string
-          ticket_type: string
         }
         Update: {
           accommodation_required?: boolean | null
@@ -120,14 +123,22 @@ export type Database = {
           college?: string | null
           created_at?: string
           email?: string
+          event_id?: string | null
           id?: string
           name?: string
           payment_image_url?: string | null
           payment_status?: string | null
           phone?: string
-          ticket_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_settings: {
         Row: {
@@ -150,6 +161,39 @@ export type Database = {
           setting_name?: string
           setting_value?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sponsors: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          tier: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          tier?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          tier?: string | null
+          updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }

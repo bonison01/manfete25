@@ -8,18 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Search, Download, Calendar, Users } from "lucide-react";
+import { Search, Download, Calendar, Users, Loader2 } from "lucide-react";
 
 interface Registration {
   id: string;
   name: string;
   email: string;
   phone: string;
-  college: string;
-  ticket_type: string;
+  college: string | null;
+  event_id: string;
   amount: number;
   payment_status: string;
   created_at: string;
+  event?: {
+    title: string;
+  };
 }
 
 const paymentStatusColors: Record<string, string> = {
@@ -49,7 +52,12 @@ const Registrations = () => {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("registrations")
-        .select("*")
+        .select(`
+          *,
+          event:event_id (
+            title
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -73,7 +81,8 @@ const Registrations = () => {
           reg.name.toLowerCase().includes(term) ||
           reg.email.toLowerCase().includes(term) ||
           reg.phone.toLowerCase().includes(term) ||
-          (reg.college && reg.college.toLowerCase().includes(term))
+          (reg.college && reg.college.toLowerCase().includes(term)) ||
+          (reg.event?.title && reg.event.title.toLowerCase().includes(term))
       );
     }
     
@@ -109,7 +118,7 @@ const Registrations = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ["Name", "Email", "Phone", "College", "Ticket Type", "Amount", "Payment Status", "Registration Date"];
+    const headers = ["Name", "Email", "Phone", "College", "Event", "Amount", "Payment Status", "Registration Date"];
     
     const csvRows = [
       headers.join(','),
@@ -120,7 +129,7 @@ const Registrations = () => {
           `"${reg.email}"`,
           `"${reg.phone}"`,
           `"${reg.college || ''}"`,
-          `"${reg.ticket_type}"`,
+          `"${reg.event?.title || ''}"`,
           reg.amount,
           `"${reg.payment_status}"`,
           `"${date}"`,
@@ -158,7 +167,7 @@ const Registrations = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by name, email or phone..."
+            placeholder="Search by name, email, phone or event..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -180,7 +189,7 @@ const Registrations = () => {
 
       {isLoading ? (
         <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : filteredRegistrations.length === 0 ? (
         <div className="flex flex-col items-center justify-center border rounded-lg py-16">
@@ -200,7 +209,7 @@ const Registrations = () => {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead>Ticket</TableHead>
+                  <TableHead>Event</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
@@ -223,7 +232,7 @@ const Registrations = () => {
                         {registration.phone}
                       </div>
                     </TableCell>
-                    <TableCell>{registration.ticket_type}</TableCell>
+                    <TableCell>{registration.event?.title || "Unknown event"}</TableCell>
                     <TableCell>₹{registration.amount}</TableCell>
                     <TableCell>
                       <Select
