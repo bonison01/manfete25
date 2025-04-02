@@ -3,9 +3,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAdmin } = useAuth();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -35,10 +37,21 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="hidden md:block">
-          <Button asChild className="bg-festival-purple text-white hover:bg-festival-purple/90">
-            <Link to="/register">Register Now</Link>
-          </Button>
+        <div className="hidden md:flex space-x-2">
+          {user && isAdmin ? (
+            <Button asChild className="bg-festival-purple text-white hover:bg-festival-purple/90">
+              <Link to="/admin">Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Button asChild variant="outline">
+                <Link to="/login">Login</Link>
+              </Button>
+              <Button asChild className="bg-festival-purple text-white hover:bg-festival-purple/90">
+                <Link to="/register">Register Now</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -64,11 +77,20 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
-            <Button asChild className="mt-2 w-full bg-festival-purple text-white hover:bg-festival-purple/90">
-              <Link to="/register" onClick={() => setIsMenuOpen(false)}>
-                Register Now
-              </Link>
-            </Button>
+            {user && isAdmin ? (
+              <Button asChild className="mt-2 w-full bg-festival-purple text-white hover:bg-festival-purple/90">
+                <Link to="/admin" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="outline" className="w-full">
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                </Button>
+                <Button asChild className="w-full bg-festival-purple text-white hover:bg-festival-purple/90">
+                  <Link to="/register" onClick={() => setIsMenuOpen(false)}>Register Now</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

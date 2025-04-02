@@ -89,37 +89,67 @@ export type Database = {
       }
       registrations: {
         Row: {
+          accommodation_required: boolean | null
           amount: number
           college: string | null
           created_at: string
           email: string
           id: string
           name: string
+          payment_image_url: string | null
           payment_status: string | null
           phone: string
           ticket_type: string
         }
         Insert: {
+          accommodation_required?: boolean | null
           amount: number
           college?: string | null
           created_at?: string
           email: string
           id?: string
           name: string
+          payment_image_url?: string | null
           payment_status?: string | null
           phone: string
           ticket_type: string
         }
         Update: {
+          accommodation_required?: boolean | null
           amount?: number
           college?: string | null
           created_at?: string
           email?: string
           id?: string
           name?: string
+          payment_image_url?: string | null
           payment_status?: string | null
           phone?: string
           ticket_type?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          setting_name: string
+          setting_value: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          setting_name: string
+          setting_value: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          setting_name?: string
+          setting_value?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

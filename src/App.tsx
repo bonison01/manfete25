@@ -14,6 +14,7 @@ import About from "./pages/About";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 // Admin pages
 import AdminLayout from "./components/admin/AdminLayout";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             
             {/* Admin routes */}
             <Route element={<AdminRoute />}>
