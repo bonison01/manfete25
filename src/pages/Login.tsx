@@ -80,12 +80,12 @@ const Login = () => {
                     "Login"
                   )}
                 </Button>
-                <div className="text-center text-sm">
+                {/* <div className="text-center text-sm">
                   Don't have an account?{" "}
                   <Link to="/signup" className="text-festival-purple hover:underline">
                     Sign up
                   </Link>
-                </div>
+                </div> */}
               </CardFooter>
             </form>
           </Card>
