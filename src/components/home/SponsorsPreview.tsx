@@ -1,62 +1,22 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
-const sponsors = [
-  {
-    id: 1,
-    name: "TechCorp",
-    tier: "Platinum",
-    logo: "https://via.placeholder.com/200x80?text=TechCorp",
-  },
-  {
-    id: 2,
-    name: "Global Media",
-    tier: "Gold",
-    logo: "https://via.placeholder.com/200x80?text=GlobalMedia",
-  },
-  {
-    id: 3,
-    name: "Urban Apparel",
-    tier: "Gold",
-    logo: "https://via.placeholder.com/200x80?text=UrbanApparel",
-  },
-  {
-    id: 4,
-    name: "Eco Solutions",
-    tier: "Silver",
-    logo: "https://via.placeholder.com/200x80?text=EcoSolutions",
-  },
-  {
-    id: 5,
-    name: "Metro Bank",
-    tier: "Silver",
-    logo: "https://via.placeholder.com/200x80?text=MetroBank",
-  },
-  {
-    id: 6,
-    name: "Local Foods",
-    tier: "Bronze",
-    logo: "https://via.placeholder.com/200x80?text=LocalFoods",
-  },
-  {
-    id: 7,
-    name: "Sound Systems",
-    tier: "Bronze",
-    logo: "https://via.placeholder.com/200x80?text=SoundSystems",
-  },
-  {
-    id: 8,
-    name: "City Hotels",
-    tier: "Silver",
-    logo: "https://via.placeholder.com/200x80?text=CityHotels",
-  },
-];
+interface Sponsor {
+  id: string;
+  name: string;
+  tier: string | null;
+  logo_url: string | null;
+  description: string | null;
+  website_url: string | null;
+}
 
-const getTierColor = (tier: string) => {
+const getTierColor = (tier: string | null) => {
   switch (tier) {
     case 'Platinum':
       return 'bg-gradient-to-r from-purple-400 to-purple-600';
@@ -67,19 +27,45 @@ const getTierColor = (tier: string) => {
     case 'Bronze':
       return 'bg-gradient-to-r from-amber-600 to-amber-800';
     default:
-      return '';
+      return 'bg-gradient-to-r from-blue-400 to-blue-600';
   }
 };
 
 const SponsorsPreview = () => {
-  const [hoveredSponsor, setHoveredSponsor] = useState<number | null>(null);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hoveredSponsor, setHoveredSponsor] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
   const controls = useAnimation();
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
 
   useEffect(() => {
-    if (isInView && isAutoScrolling) {
+    fetchSponsors();
+  }, []);
+
+  const fetchSponsors = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("sponsors")
+        .select("*")
+        .order("tier", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setSponsors(data || []);
+    } catch (error) {
+      console.error("Error fetching sponsors:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isInView && isAutoScrolling && sponsors.length > 4) {
       controls.start({
         x: [0, -1500],
         transition: {
@@ -98,7 +84,7 @@ const SponsorsPreview = () => {
     return () => {
       controls.stop();
     };
-  }, [isInView, isAutoScrolling, controls]);
+  }, [isInView, isAutoScrolling, controls, sponsors.length]);
   
   const handleManualScroll = (direction: 'left' | 'right') => {
     setIsAutoScrolling(false);
@@ -122,59 +108,77 @@ const SponsorsPreview = () => {
           </p>
         </div>
 
-        <div className="relative">
-          <div 
-            ref={containerRef}
-            className="overflow-hidden"
-          >
-            <motion.div 
-              className="flex gap-6 min-w-max py-4"
-              animate={controls}
-              initial={{ x: 0 }}
-              onHoverStart={() => setIsAutoScrolling(false)}
-              onHoverEnd={() => setIsAutoScrolling(true)}
-            >
-              {/* Duplicate sponsors for infinite loop effect */}
-              {[...sponsors, ...sponsors].map((sponsor, index) => (
-                <motion.div
-                  key={`${sponsor.id}-${index}`}
-                  className="flex-none w-44 flex flex-col items-center justify-center rounded-lg border border-muted p-4 transition-all hover:shadow-md"
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.1)"
-                  }}
-                  onHoverStart={() => setHoveredSponsor(sponsor.id)}
-                  onHoverEnd={() => setHoveredSponsor(null)}
-                >
-                  <img src={sponsor.logo} alt={sponsor.name} className="h-16 w-auto" />
-                  <p className="mt-2 text-sm font-medium">{sponsor.name}</p>
-                  <motion.div 
-                    className={`mt-1 h-1 w-0 rounded-full ${getTierColor(sponsor.tier)}`}
-                    animate={{ width: hoveredSponsor === sponsor.id ? '80%' : '0%' }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  <span className="text-xs text-muted-foreground">{sponsor.tier}</span>
-                </motion.div>
-              ))}
-            </motion.div>
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <Loader2 className="h-8 w-8 animate-spin text-festival-purple" />
           </div>
-          
-          <button 
-            onClick={() => handleManualScroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-sm text-white rounded-r-full p-2 hover:bg-black/40 transition-colors z-10"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          
-          <button 
-            onClick={() => handleManualScroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-sm text-white rounded-l-full p-2 hover:bg-black/40 transition-colors z-10"
-            aria-label="Scroll right"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-        </div>
+        ) : sponsors.length > 0 ? (
+          <div className="relative">
+            <div 
+              ref={containerRef}
+              className="overflow-hidden"
+            >
+              <motion.div 
+                className="flex gap-6 min-w-max py-4"
+                animate={sponsors.length > 4 ? controls : undefined}
+                initial={{ x: 0 }}
+                onHoverStart={() => setIsAutoScrolling(false)}
+                onHoverEnd={() => setIsAutoScrolling(true)}
+              >
+                {/* Duplicate sponsors for infinite loop effect if there are enough */}
+                {[...sponsors, ...(sponsors.length > 4 ? sponsors : [])].map((sponsor, index) => (
+                  <motion.div
+                    key={`${sponsor.id}-${index}`}
+                    className="flex-none w-44 flex flex-col items-center justify-center rounded-lg border border-muted p-4 transition-all hover:shadow-md"
+                    whileHover={{ 
+                      scale: 1.05,
+                      boxShadow: "0 10px 25px rgba(0,0,0,0.1)"
+                    }}
+                    onHoverStart={() => setHoveredSponsor(sponsor.id)}
+                    onHoverEnd={() => setHoveredSponsor(null)}
+                  >
+                    <img 
+                      src={sponsor.logo_url || "https://via.placeholder.com/200x80?text=" + sponsor.name} 
+                      alt={sponsor.name} 
+                      className="h-16 w-auto" 
+                    />
+                    <p className="mt-2 text-sm font-medium">{sponsor.name}</p>
+                    <motion.div 
+                      className={`mt-1 h-1 w-0 rounded-full ${getTierColor(sponsor.tier)}`}
+                      animate={{ width: hoveredSponsor === sponsor.id ? '80%' : '0%' }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <span className="text-xs text-muted-foreground">{sponsor.tier || "Sponsor"}</span>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+            
+            {sponsors.length > 4 && (
+              <>
+                <button 
+                  onClick={() => handleManualScroll('left')}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-sm text-white rounded-r-full p-2 hover:bg-black/40 transition-colors z-10"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                
+                <button 
+                  onClick={() => handleManualScroll('right')}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-sm text-white rounded-l-full p-2 hover:bg-black/40 transition-colors z-10"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-muted-foreground">No sponsors found.</p>
+          </div>
+        )}
 
         <div className="mt-12 text-center">
           <Button asChild variant="outline" size="lg">
