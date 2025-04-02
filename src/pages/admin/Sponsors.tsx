@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,10 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Globe, Image, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Globe, Pencil, Plus, Trash2, Upload, Loader2 } from "lucide-react";
 
 interface Sponsor {
   id: string;
@@ -26,30 +25,18 @@ interface Sponsor {
 const SponsorsManager = () => {
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
-
   const [formData, setFormData] = useState({
     name: "",
     website_url: "",
     description: "",
     tier: "bronze",
   });
-
-  // File upload state
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState("");
-
-  const sponsorTiers = [
-    { id: "platinum", name: "Platinum" },
-    { id: "gold", name: "Gold" },
-    { id: "silver", name: "Silver" },
-    { id: "bronze", name: "Bronze" },
-    { id: "partner", name: "Partner" }
-  ];
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchSponsors();
@@ -61,7 +48,6 @@ const SponsorsManager = () => {
       const { data, error } = await supabase
         .from("sponsors")
         .select("*")
-        .order("tier", { ascending: true })
         .order("name", { ascending: true });
 
       if (error) throw error;
@@ -88,7 +74,6 @@ const SponsorsManager = () => {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
       
-      // Create a preview
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
@@ -122,7 +107,6 @@ const SponsorsManager = () => {
     try {
       setIsSubmitting(true);
       
-      // If there's a logo URL and it's in our storage, delete it
       if (selectedSponsor.logo_url && selectedSponsor.logo_url.includes("storage")) {
         const path = selectedSponsor.logo_url.split("/").slice(4).join("/");
         await supabase.storage.from("sponsor_logos").remove([path]);
@@ -154,18 +138,7 @@ const SponsorsManager = () => {
       
       let logo_url = selectedSponsor?.logo_url || null;
       
-      // If there's a file to upload
       if (file) {
-        // Create the storage bucket if it doesn't exist
-        const { data: bucketData, error: bucketError } = await supabase.storage.getBucket("sponsor_logos");
-        
-        if (bucketError && bucketError.message.includes("not found")) {
-          await supabase.storage.createBucket("sponsor_logos", {
-            public: true,
-            fileSizeLimit: 1024 * 1024 * 2, // 2MB
-          });
-        }
-        
         const fileExt = file.name.split(".").pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
@@ -176,7 +149,6 @@ const SponsorsManager = () => {
           
         if (uploadError) throw uploadError;
         
-        // Get the public URL
         const { data: urlData } = supabase.storage
           .from("sponsor_logos")
           .getPublicUrl(filePath);
@@ -185,15 +157,14 @@ const SponsorsManager = () => {
       }
       
       if (selectedSponsor) {
-        // Update existing sponsor
         const { error } = await supabase
           .from("sponsors")
           .update({
             name: formData.name,
-            website_url: formData.website_url || null,
-            description: formData.description || null,
-            tier: formData.tier,
+            description: formData.description,
+            website_url: formData.website_url,
             logo_url,
+            tier: formData.tier,
             updated_at: new Date().toISOString(),
           })
           .eq("id", selectedSponsor.id);
@@ -201,28 +172,26 @@ const SponsorsManager = () => {
         if (error) throw error;
         toast.success("Sponsor updated successfully");
       } else {
-        // Create new sponsor
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from("sponsors")
           .insert({
             name: formData.name,
-            website_url: formData.website_url || null,
-            description: formData.description || null,
-            tier: formData.tier,
+            description: formData.description,
+            website_url: formData.website_url,
             logo_url,
-            updated_at: new Date().toISOString(),
-          });
+            tier: formData.tier,
+          })
+          .select();
           
         if (error) throw error;
-        toast.success("Sponsor added successfully");
+        toast.success("Sponsor created successfully");
       }
       
-      // Refresh sponsors
       fetchSponsors();
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving sponsor:", error);
-      toast.error("Failed to save sponsor");
+      toast.error(error.message || "Failed to save sponsor");
     } finally {
       setIsSubmitting(false);
       setIsOpen(false);
@@ -266,7 +235,6 @@ const SponsorsManager = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Logo</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Tier</TableHead>
                   <TableHead>Website</TableHead>
@@ -276,42 +244,27 @@ const SponsorsManager = () => {
               <TableBody>
                 {sponsors.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                       No sponsors found. Add your first sponsor.
                     </TableCell>
                   </TableRow>
                 ) : (
                   sponsors.map((sponsor) => (
                     <TableRow key={sponsor.id}>
-                      <TableCell>
-                        {sponsor.logo_url ? (
-                          <img 
-                            src={sponsor.logo_url} 
-                            alt={sponsor.name} 
-                            className="h-10 w-10 object-contain"
-                          />
-                        ) : (
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                            <Image className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                        )}
-                      </TableCell>
                       <TableCell className="font-medium">{sponsor.name}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize bg-primary/10 text-primary">
-                          {sponsor.tier || "Bronze"}
-                        </span>
-                      </TableCell>
+                      <TableCell>{sponsor.tier}</TableCell>
                       <TableCell>
                         {sponsor.website_url && (
-                          <a 
-                            href={sponsor.website_url} 
-                            target="_blank" 
+                          <a
+                            href={sponsor.website_url}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-sm text-muted-foreground hover:text-primary"
+                            className="text-primary hover:underline"
                           >
-                            <Globe className="mr-1 h-3 w-3" />
-                            Website
+                            <div className="flex items-center">
+                              <Globe className="mr-2 h-4 w-4" />
+                              Visit Website
+                            </div>
                           </a>
                         )}
                       </TableCell>
@@ -350,7 +303,7 @@ const SponsorsManager = () => {
           <DialogHeader>
             <DialogTitle>{selectedSponsor ? "Edit Sponsor" : "Add New Sponsor"}</DialogTitle>
             <DialogDescription>
-              Fill in the form below to {selectedSponsor ? "update the" : "add a new"} sponsor
+              Fill in the form below to {selectedSponsor ? "update the" : "create a new"} sponsor
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
@@ -365,26 +318,6 @@ const SponsorsManager = () => {
                   required
                 />
               </div>
-              
-              <div>
-                <Label htmlFor="tier">Sponsorship Tier</Label>
-                <Select
-                  value={formData.tier}
-                  onValueChange={handleTierChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select tier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sponsorTiers.map((tier) => (
-                      <SelectItem key={tier.id} value={tier.id}>
-                        {tier.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
               <div>
                 <Label htmlFor="website_url">Website URL</Label>
                 <Input
@@ -393,10 +326,8 @@ const SponsorsManager = () => {
                   type="url"
                   value={formData.website_url}
                   onChange={handleInputChange}
-                  placeholder="https://example.com"
                 />
               </div>
-              
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -407,7 +338,20 @@ const SponsorsManager = () => {
                   rows={3}
                 />
               </div>
-              
+              <div>
+                <Label htmlFor="tier">Tier</Label>
+                <Select value={formData.tier} onValueChange={handleTierChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bronze">Bronze</SelectItem>
+                    <SelectItem value="silver">Silver</SelectItem>
+                    <SelectItem value="gold">Gold</SelectItem>
+                    <SelectItem value="platinum">Platinum</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label htmlFor="logo">Sponsor Logo</Label>
                 <Input
@@ -423,7 +367,7 @@ const SponsorsManager = () => {
                   <img
                     src={filePreview}
                     alt="Sponsor logo preview"
-                    className="max-h-40 rounded-md object-contain"
+                    className="max-h-40 rounded-md object-cover"
                   />
                 </div>
               )}
@@ -436,7 +380,7 @@ const SponsorsManager = () => {
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 className="bg-festival-purple hover:bg-festival-purple/90"
                 disabled={isSubmitting}
@@ -444,10 +388,10 @@ const SponsorsManager = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {selectedSponsor ? "Updating..." : "Adding..."}
+                    {selectedSponsor ? "Updating..." : "Creating..."}
                   </>
                 ) : (
-                  selectedSponsor ? "Update Sponsor" : "Add Sponsor"
+                  selectedSponsor ? "Update Sponsor" : "Create Sponsor"
                 )}
               </Button>
             </DialogFooter>
